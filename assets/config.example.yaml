@@ -1,0 +1,75 @@
+# 周周复盘小贴士 · 配置模板
+# 首次运行时复制到 ~/.workbuddy/weekly-review/config.yaml 并逐项确认
+# 标注「待确认」的项必须和用户对齐后再开跑，不要用默认值硬上
+
+user:
+  name: ""                      # 待确认：服务对象
+  open_id: ""                   # 飞书 open_id，用于私聊推送
+  role: ""                      # hr / manager / ops
+  scope: "self"                 # self | team | department
+
+# ---------- 数据源 ----------
+feishu:
+  enabled: true
+  scope: "at_me"                # at_me | groups | p2p | all
+  chat_ids: []                  # 待确认：只监控指定群时填，scope=groups 必填
+  keyword_watch:                # 催办类信号词，越具体越好
+    - "怎么还没"
+    - "催一下"
+    - "没人回"
+    - "有进展吗"
+    - "什么时候能好"
+
+moka:
+  enabled: true
+  enabled_modules:              # 待确认：只保留用户真的会处理的
+    - recruiting_pipeline
+    - interview_feedback
+    - candidate_stuck
+  exclude_jobs: []               # 暂停招聘的岗位，不参与超期判定
+
+# ---------- 规则 ----------
+tolerance: "moderate"           # strict | moderate | loose
+
+rules:
+  candidate_stuck:     { enabled: true,  days_screening: 3, days_interview: 5, days_offer: 3 }
+  interview_feedback:  { enabled: true,  days: 2 }
+  job_no_resume:       { enabled: true,  days: 7, urgent_days: 3 }
+  chat_nudge_signal:   { enabled: true }
+  at_me_no_reply:      { enabled: true,  hours: 24 }
+  promise_overdue:     { enabled: false, hours: 4 }    # 误报偏高，建议 strict 档再开
+  attendance_anomaly:  { enabled: false, daily_for: ["missing_punch"] }
+  approval_pending:    { enabled: true,  hours: 24 }
+  onboarding_stalled:  { enabled: true,  days: 3 }
+
+# ---------- 节奏 ----------
+daily:
+  push_at: ["09:30"]            # 待确认：可多个时间点
+  max_items: 5                  # 单条消息最多几条，超出折叠
+  quiet_hours: ["21:00-08:30"]  # 静默时段不推送，异常积攒到下一个时间点
+
+weekly:
+  push_at: "FRIDAY 17:00"       # 待确认：周五 17:00 或 周一 09:00
+  channel: "p2p"                # p2p | group
+  group_chat_id: ""             # channel=group 时必填
+  as_doc: false                 # true 时同时生成飞书文档，便于转发
+
+# ---------- 边界 ----------
+boundaries:
+  never_message_others: true    # 只提醒本人，不代发消息
+  ignore_sensitive:             # 这些字段即使接口返回也不读
+    - salary
+    - performance
+    - id_number
+    - medical
+  anonymize_in_weekly: true     # 周报对外可见，候选人只写姓氏+岗位
+  retention_days:
+    daily_reports: 90
+    resolved_items: 30
+
+# ---------- 成长 ----------
+growth:
+  ledger_enabled: true
+  calibrate_every_weeks: 4
+  ask_feedback: true            # 周报末尾问一次「有用/没用/没做」
+  auto_apply_threshold: false   # false=只提议，经用户确认后再改
